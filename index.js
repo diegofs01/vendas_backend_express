@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 let cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+let mysql = require('mysql');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -45,10 +46,34 @@ app.get('/', (req, res, next) => {
     res.json({message:'Tudo certo!'});
 });
 
-app.get('/clientes', verifyJWT, (req, res, next) => {
-    res.json([{id:1, nome:'Diego'}, {id:2, nome:'Peralta'}]);
+app.get('/cliente', verifyJWT, (req, res, next) => {
+    //res.json([{id:1, nome:'Diego'}, {id:2, nome:'Peralta'}]);
+    execQuery('SELECT * FROM cliente', res);
 });
+
+app.get('/cliente/:id', verifyJWT, (req, res, next) => {
+    execQuery('SELECT * FROM cliente WHERE cpf=' + req.params.id, res);
+})
 
 let server = http.createServer(app);
 server.listen(3000);
 console.log("Servidor rodando na porta 3000...");
+
+function execQuery(query, res) {
+    const connection = mysql.createConnection({
+        host: process.env.mysqlUrl,
+        port: process.env.mysqPort,
+        user: process.env.mysqlUsername,
+        password: process.env.mysqlPassword,
+        database: process.env.mysqlDatabase,
+        insecureAuth: true
+    });
+
+    connection.query(query, (error, results, fields) => {
+        if(error) 
+            res.json(error);
+        else
+            res.json(results);
+        connection.end();
+    });
+}
