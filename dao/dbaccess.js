@@ -11,21 +11,21 @@ const connection = mysql.createConnection({
 
 const executeQuery = (query, res) => {
     connection.query(query, (error, results, fields) => {
-        if(error) 
+        if(error) {
             res.json(error);
-        else
+        } else {
             res.json(results);
-        connection.end();
+        }
     });
 }
 
 const executeQueryWithValues = (query, values, res) => {
     connection.query(query, values, (error, results, fields) => {
-        if(error) 
+        if(error) {
             res.json(error);
-        else
+        } else {
             res.json(results);
-        connection.end();
+        }
     });
 }
 

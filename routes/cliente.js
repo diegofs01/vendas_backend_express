@@ -35,8 +35,8 @@ router.get(clienteUrl, verifyJWT, (req, res, next) => {
 router.get(clienteUrl + '/:cpf', verifyJWT, (req, res, next) => {
     if(req.params.cpf === 'ativos')
         next('route');
-    
-    dbaccess.executeQueryWithValues(selectSingleQuery, req.params.cpf, res);
+    else
+        dbaccess.executeQueryWithValues(selectSingleQuery, req.params.cpf, res);
 });
 
 router.put(clienteUrl + '/editar', verifyJWT, (req, res, next) => {
