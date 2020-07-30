@@ -5,7 +5,7 @@ router.post('/login', (req, res, next) => {
     if(req.body.user === 'diego' && req.body.pwd === 'diego123') {
         const id = 1;   
         let token = jwt.sign({id}, process.env.SECRET, {
-            expiresIn: 300
+            expiresIn: 1800
         });
         return res.json({auth: true, token: token});
     }
