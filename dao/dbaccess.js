@@ -24,7 +24,7 @@ const executeQueryWithValues = (query, values, res) => {
         if(error) {
             res.json(error);
         } else {
-            res.json(results);
+            res.status(200).json(results);
         }
     });
 }

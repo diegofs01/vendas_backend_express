@@ -1,7 +1,7 @@
 let router = require('express').Router();
 let dbaccess = require('../dao/dbaccess');
 let verifyJWT = require('./jwt').verifyJWT;
-const clienteUrl = '/cliente';
+const clienteUrl = '/api/cliente';
 const insertQuery = 'INSERT INTO cliente (cpf, nome, data_nascimento, sexo, cep, logradouro, numero, complemento, bairro, cidade, uf, saldo, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 const selectAllQuery = 'SELECT * FROM cliente';
 const selectSingleQuery = 'SELECT * FROM cliente WHERE cpf = ?';
