@@ -14,7 +14,7 @@ const executeQuery = (query, res) => {
         if(error) {
             res.json(error);
         } else {
-            res.json(results);
+            res.status(200).json(results);
         }
     });
 }
@@ -29,5 +29,23 @@ const executeQueryWithValues = (query, values, res) => {
     });
 }
 
+const executeQueryWithReturn = async (query, values) => {
+    if(values === null) {
+        connection.query(query, async (error, results) => {
+            if(error === null) {
+                return results;
+            }
+        });
+    } else {
+        connection.query(query, values, async (error, results) => {
+            if(error === null) {
+                return results;
+            }
+        });
+    }
+    return [];
+}
+
 module.exports.executeQuery = executeQuery;
 module.exports.executeQueryWithValues = executeQueryWithValues;
+module.exports.executeQueryWithReturn = executeQueryWithReturn;

@@ -13,6 +13,7 @@ app.use(cookieParser());
 app.use(require('./routes/jwt').router);
 app.use(require('./routes/cliente'));
 app.use(require('./routes/produto'));
+app.use(require('./routes/venda'));
 
 app.get('/', (req, res, next) => {
     res.json({message:'Tudo certo!'});
