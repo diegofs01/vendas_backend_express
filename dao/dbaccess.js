@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
 });
 
 const executeQuery = (query, res) => {
-    connection.query(query, (error, results, fields) => {
+    connection.query(query, (error, results) => {
         if(error) {
             res.json(error);
         } else {
@@ -20,7 +20,7 @@ const executeQuery = (query, res) => {
 }
 
 const executeQueryWithValues = (query, values, res) => {
-    connection.query(query, values, (error, results, fields) => {
+    connection.query(query, values, (error, results) => {
         if(error) {
             res.json(error);
         } else {
@@ -30,20 +30,29 @@ const executeQueryWithValues = (query, values, res) => {
 }
 
 const executeQueryWithReturn = async (query, values) => {
-    if(values === null) {
-        connection.query(query, async (error, results) => {
-            if(error === null) {
-                return results;
-            }
-        });
-    } else {
-        connection.query(query, values, async (error, results) => {
-            if(error === null) {
-                return results;
-            }
-        });
+    let promise = new Promise((resolve, reject) => {
+        if(values === null) {
+            connection.query(query, (error, results) => {
+                if(error) reject(error);
+                resolve(results);
+            });
+        } 
+        if(values !== null && values !== undefined) {
+            connection.query(query, values, (error, results) => {
+                if(error) reject(error);
+                resolve(results);
+            });
+        };
+        if(values === undefined) {
+            reject({error: 'undefined'});
+        };
+    });
+    try {
+        return await promise;
+    } catch (e) {
+        return e;
     }
-    return [];
+    
 }
 
 module.exports.executeQuery = executeQuery;
