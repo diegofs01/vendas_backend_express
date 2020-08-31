@@ -18,7 +18,14 @@ router.post('/logout', function(req, res) {
 });
 
 const verifyJWT = (req, res, next) => {
-    let token = req.headers['x-access-token'];
+    let token = req.headers['Authorization'];
+
+    console.log('Token: ' + token);
+
+    if(token.startsWith("Bearer ")) {
+        token = token.substring(7);
+    }
+
     if(!token) return res.status(401).json({auth: false, message: 'No token provided.'});
 
     jwt.verify(token, process.env.SECRET, function(err, decoded) {
