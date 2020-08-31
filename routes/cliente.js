@@ -23,7 +23,7 @@ router.post(clienteUrl + '/novo', verifyJWT, (req, res, next) => {
         req.body.cidade,
         req.body.uf,
         req.body.saldo,
-        req.body.ativo.toLowerCase() === 'true'
+        req.body.ativo
     ];
     dbaccess.executeQueryWithValues(insertQuery, cliente, res);
 });

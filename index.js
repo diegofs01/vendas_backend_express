@@ -1,14 +1,24 @@
 require('dotenv-safe').config();
-import jwt from 'jsonwebtoken';
-import { createServer } from 'http';
-import express from 'express';
+let jwt = require('jsonwebtoken');
+let http = require('http');
+const express = require('express');
 const app = express();
-import cookieParser from 'cookie-parser';
-import { urlencoded, json } from 'body-parser';
+let cors = require('cors');
+let cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
-app.use(urlencoded({extended: true}));
-app.use(json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 app.use(cookieParser());
+
+app.use(
+    cors({
+        origin: true,
+        credentials: true,
+        methods: 'GET,POST,PUT,DELETE',
+        optionsSuccessStatus: 200,
+    })
+);
 
 app.use(require('./routes/jwt').router);
 app.use(require('./routes/cliente'));
@@ -19,16 +29,6 @@ app.get('/', (req, res, next) => {
     res.json({message:'Tudo certo!'});
 });
 
-app.use(
-    cors({
-        origin: true,
-        credentials: true,
-        methods: 'GET,POST,PUT,DELETE',
-        optionsSuccessStatus: 200,
-        allowedHeaders: ['Content-Type'],
-    })
-);
-
-let server = createServer(app);
-server.listen(3000);
-console.log("Servidor rodando na porta 3000...");
+let server = http.createServer(app);
+server.listen(8080);
+console.log("Servidor rodando na porta 8080...");
