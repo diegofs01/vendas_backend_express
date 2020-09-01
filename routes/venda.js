@@ -4,40 +4,42 @@ const { STATUS_CODES } = require('http');
 let verifyJWT = require('./jwt').verifyJWT;
 const vendaUrl = '/api/venda';
 
-//const insertQuery = 'INSERT INTO produto (codigo, nome, unidade, valor) VALUES (?, ?, ?, ?)';
-const selectSingleVenda = 'SELECT id, data_venda, valor_total, cliente_cpf as cliente FROM venda WHERE id = ?';
-const selectAllVendas = 'SELECT id, data_venda, valor_total, cliente_cpf as cliente FROM venda';
+const insertQueryVenda = 'INSERT INTO venda (data_venda, valor_total, cliente_cpf) VALUES (?, ?, ?)';
+const selectSingleVenda = 'SELECT id, data_venda as dataVenda, valor_total as valorTotal, cliente_cpf as cliente FROM venda WHERE id = ?';
+const selectAllVendas = 'SELECT id, data_venda as dataVenda, valor_total as valorTotal, cliente_cpf as cliente FROM venda';
+
+const insertQueryItem = 'INSERT INTO item (id_venda, quantidade, produto_codigo) VALUES (?, ?, ?)';
 const selectItensByVenda= 'SELECT id_item, id_venda, quantidade, produto_codigo as produto FROM item WHERE id_venda = ?';
-const selectProdutoByCodigo = 'SELECT * FROM produto WHERE codigo = ?';
-const selectClienteByCpf = 'SELECT * FROM cliente WHERE cpf = ?';
 const selectItemById = 'SELECT * FROM item WHERE id_item = ?';
 const deleteItemById = 'DELETE FROM item WHERE id_item = ?';
-//const updateQuery = 'UPDATE produto SET nome = ?, unidade = ?, valor = ? WHERE codigo = ?';
 
-/*
-	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
-	private int id;
-	
-	private Timestamp dataVenda;
-	
-	@ManyToOne
-	private Cliente cliente;
-	
-	@Transient
-	private Set<Item> itens;
-	
-    private double valorTotal;
-*/
+const selectProdutoByCodigo = 'SELECT * FROM produto WHERE codigo = ?';
 
-/*router.post(vendaUrl + '/novo', verifyJWT, (req, res, next) => {
-    console.log(venda);
+const selectClienteByCpf = 'SELECT * FROM cliente WHERE cpf = ?';
+const updateClienteQuery = 'UPDATE cliente SET saldo = ? WHERE cpf = ?';
+
+router.post(vendaUrl + '/novo', verifyJWT, async (req, res, next) => {
     let venda = [
-        req.body.dataVenda, 
-        req.body.cliente.cpf, 
-        req.body.valorTotal
-    ];
-    dbaccess.executeQueryWithValues(insertQuery, produto, res);
-});*/
+        req.body.dataVenda.replace("Z", ""),  
+		req.body.valorTotal,
+		req.body.cliente.cpf
+	];
+	let cliente = [
+		req.body.cliente.saldo,
+		req.body.cliente.cpf
+	];
+	let returnPacket = await dbaccess.executeQueryWithReturn(insertQueryVenda, venda);
+	for await(let item of req.body.itens) {
+		insertItem = [
+			returnPacket.insertId,
+			item.quantidade,
+			item.produto.codigo
+		];
+		let dummyVar = await dbaccess.executeQueryWithReturn(insertQueryItem, insertItem);
+	}
+	let dummyVar = await dbaccess.executeQueryWithReturn(updateClienteQuery, cliente);
+	res.status(201).json('CREATED');
+});
 
 router.get(vendaUrl, verifyJWT, async (req, res, next) => {
 	let vendas = await dbaccess.executeQueryWithReturn(selectAllVendas, null);
@@ -95,23 +97,3 @@ router.delete(vendaUrl + '/excluirItem/:idItem', verifyJWT, async(req, res, next
 });
 
 module.exports = router;
-
-/*
-    @PostMapping(path="/novo")
-	public @ResponseBody String addVenda(@RequestBody Venda venda) {		
-		vendaRepository.save(venda);
-		
-		for(Item i: venda.getItens()) {
-			i.setIdVenda(venda.getId());
-			itemRepository.save(i);
-		}
-		
-		clienteRepository.save(venda.getCliente());
-		
-		return "Venda salvo com Sucesso";
-	}
-	
-
-	
-
-*/
