@@ -7,11 +7,13 @@ const vendaUrl = '/api/venda';
 const insertQueryVenda = 'INSERT INTO venda (data_venda, valor_total, cliente_cpf) VALUES (?, ?, ?)';
 const selectSingleVenda = 'SELECT id, data_venda as dataVenda, valor_total as valorTotal, cliente_cpf as cliente FROM venda WHERE id = ?';
 const selectAllVendas = 'SELECT id, data_venda as dataVenda, valor_total as valorTotal, cliente_cpf as cliente FROM venda';
+const updateVenda = 'UPDATE venda SET data_venda = ?, valor_total = ?, cliente_cpf = ? WHERE id = ?';
 
 const insertQueryItem = 'INSERT INTO item (id_venda, quantidade, produto_codigo) VALUES (?, ?, ?)';
-const selectItensByVenda= 'SELECT id_item, id_venda, quantidade, produto_codigo as produto FROM item WHERE id_venda = ?';
+const selectItensByVenda= 'SELECT id_item as idItem, id_venda, quantidade, produto_codigo as produto FROM item WHERE id_venda = ?';
 const selectItemById = 'SELECT * FROM item WHERE id_item = ?';
 const deleteItemById = 'DELETE FROM item WHERE id_item = ?';
+const updateItem = 'UPDATE item SET quantidade = ? WHERE id_item = ?';
 
 const selectProdutoByCodigo = 'SELECT * FROM produto WHERE codigo = ?';
 
@@ -70,22 +72,39 @@ router.get(vendaUrl + '/:id', verifyJWT, async (req, res, next) => {
 	res.json(await venda);
 });
 
-//para arrumar
-/* router.put(vendaUrl + '/editar', verifyJWT, (req, res, next) => {
-    let produto = [ 
-        req.body.nome, 
-        req.body.unidade, 
-        req.body.valor,
-        req.body.codigo
-    ];
-    dbaccess.executeQueryWithValues(updateQuery, produto, res);
-}); */
-
-/* @PutMapping(path="/editar") 
-public @ResponseBody String updateVenda(@RequestBody Venda venda) { 
-	vendaRepository.save(venda);
-	return "Venda atualizado";
-} */
+router.put(vendaUrl + '/editar', verifyJWT, async (req, res, next) => {
+    let venda = [
+        req.body.dataVenda.replace("Z", ""),  
+		req.body.valorTotal,
+		req.body.cliente.cpf,
+		req.body.id
+	];
+	let cliente = [
+		req.body.cliente.saldo,
+		req.body.cliente.cpf
+	];
+	let returnPacket = await dbaccess.executeQueryWithReturn(updateVenda, venda);
+	let dummyVar;
+	for await(let item of req.body.itens) {
+		let insertItem;
+		if(item.idItem !== null && item.idItem !== undefined) {
+			insertItem = [
+				item.quantidade,
+				item.itemId,
+			];
+			dummyVar = await dbaccess.executeQueryWithReturn(updateItem, insertItem);
+		} else {
+			insertItem = [
+				req.body.id,
+				item.quantidade,
+				item.produto.codigo
+			];
+			dummyVar = await dbaccess.executeQueryWithReturn(insertQueryItem, insertItem);
+		}
+	}
+	dummyVar = await dbaccess.executeQueryWithReturn(updateClienteQuery, cliente);
+	res.status(200).json('OK');
+});
 
 router.delete(vendaUrl + '/excluirItem/:idItem', verifyJWT, async(req, res, next) => {
 	let item = await dbaccess.executeQueryWithReturn(selectItemById, req.params.idItem);

@@ -52,7 +52,7 @@ router.put(clienteUrl + '/editar', verifyJWT, (req, res, next) => {
         req.body.cidade,
         req.body.uf,
         req.body.saldo,
-        req.body.ativo.toLowerCase() === 'true',
+        req.body.ativo,
         req.body.cpf
     ];
     dbaccess.executeQueryWithValues(updateQuery, cliente, res);
